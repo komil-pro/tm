@@ -1,2 +1,6 @@
 # tm
-Task Management project on Laravel
+Task Management project on Laravel.
+
+##Описание проекта
+
+>RESTful API для простой системы управления задачами, позволяющей пользователям регистрироваться, аутентифицироваться и управлять своими задачами.
