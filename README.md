@@ -1,5 +1,4 @@
-# tm
-Task Management project on Laravel.
+# Task Management project on Laravel
 
 ## Описание проекта
 
