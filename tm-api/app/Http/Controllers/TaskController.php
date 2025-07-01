@@ -2,61 +2,56 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Task;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class TaskController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    use AuthorizesRequests;
+
     public function index()
     {
-        $tasks = Task::get();
+        $tasks = Auth::user()->tasks;
         return response()->json($tasks);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        $task = new Task();
-        $task->title = $request->title;
-        $task->description = $request->description;
-        $task->status = $request->status;
-        $task->save();
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'status' => 'in:pending,in_progress,completed',
+        ]);
+
+        $task = Auth::user()->tasks()->create($validated);
+        return response()->json($task, 201);
+    }
+
+    public function show(Task $task)
+    {
+        $this->authorize('view', $task);
         return response()->json($task);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function update(Request $request, Task $task)
     {
-        $task = Task::find($id);
+        $this->authorize('update', $task);
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'status' => 'in:pending,in_progress,completed',
+        ]);
+
+        $task->update($validated);
         return response()->json($task);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function destroy(Task $task)
     {
-        $task = Task::find($id);
-        $task->title = $request->title;
-        $task->description = $request->description;
-        $task->status = $request->status;
-        $task->save();
-        return response()->json($task);
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        Task::destroy($id);
-        return response()->json(['message' => 'Deleted']);
+        $this->authorize('delete', $task);
+        $task->delete();
+        return response()->json(['message' => 'Task deleted']);
     }
 }
